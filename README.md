@@ -4,11 +4,26 @@ Agentic AI system for automating monthly newsletters given topics and opinion di
 # How to use:
 Test out the test_driver function by
 
-1. create a .env file with OPENAI_API_KEY='YOUR_API_KEY'
-2. python3 -m venv .venv
-3. source .venv/bin/activate
-4. pip install -r requirements.txt
-5. python _driver.py
+1. Create a `.env` file with your API key:
+```bash
+OPENAI_API_KEY='YOUR_API_KEY'
+```
+
+2. Create and activate a virtual environment:
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+3. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+4. Run the driver:
+```bash
+python test_driver.py
+```
 
 # Milestones
 
