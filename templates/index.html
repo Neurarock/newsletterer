@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <title>🤖Newsletterer🤖</title>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+      }
+      .container {
+        background-color: white;
+        padding: 40px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        max-width: 700px;
+        width: 100%;
+      }
+      h1 {
+        margin-top: 0;
+      }
+      .form-section {
+        text-align: left;
+      }
+      #log-stream {
+        border: 1px solid #ccc;
+        padding: 10px;
+        height: 300px;
+        overflow-y: auto;
+        background-color: #1e1e1e;
+        border-radius: 4px;
+        margin-top: 20px;
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        color: #00ff00;
+        text-align: left;
+      }
+      .log-entry {
+        margin: 2px 0;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+    </style>
+    <script>
+      let eventSource;
+      
+      function connectToLogs() {
+        eventSource = new EventSource("/logs");
+        
+        eventSource.onmessage = (event) => {
+          if (event.data.trim() === "Connected to log stream") {
+            const logDiv = document.getElementById("log-stream");
+            const newLine = document.createElement("div");
+            newLine.className = "log-entry";
+            newLine.textContent = "📡 Connected to log stream";
+            logDiv.appendChild(newLine);
+            logDiv.scrollTop = logDiv.scrollHeight;
+          } else if (event.data.trim()) {
+            const logDiv = document.getElementById("log-stream");
+            const newLine = document.createElement("div");
+            newLine.className = "log-entry";
+            newLine.textContent = event.data;
+            logDiv.appendChild(newLine);
+            logDiv.scrollTop = logDiv.scrollHeight;
+          }
+        };
+        
+        eventSource.onerror = () => {
+          console.log("Connection closed, will reconnect");
+          eventSource.close();
+          setTimeout(connectToLogs, 3000);  // Reconnect after 3 seconds
+        };
+      }
+      
+      // Connect to logs on page load
+      connectToLogs();
+    </script>
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>Newsletter maker professional audience</h1>
+      <h3>(Please note that this test version is set up for web3 content)</h3>
+
+      <p>Use this form to create this month's newsletter:</p>
+
+      <form action="/submit" method="post" class="form-section" style="display: flex; flex-direction: column; gap: 15px;">
+        <div>
+          <label for="namefield" style="display: block; margin-bottom: 5px; font-weight: bold;">news_topic:</label>
+          <input type="text" id="namefield" name="news_topic" placeholder="e.g., Stablecoin regulatory status and volume" style="width: 100%; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+        </div>
+        <div>
+          <label for="opinion_piece_prompt" style="display: block; margin-bottom: 5px; font-weight: bold;">opinion_piece_prompt:</label>
+          <textarea id="opinion_piece_prompt" name="opinion_piece_prompt" placeholder="e.g., UK stablecoin white paper. Please have the view that it is that it is a good sand box excecise at best" style="width: 100%; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; min-height: 120px; font-family: Arial, sans-serif; box-sizing: border-box;"></textarea>
+        </div>
+        <div>
+          <label for="grok_conversation" style="display: block; margin-bottom: 5px; font-weight: bold;">grok_conversation:</label>
+          <textarea id="grok_conversation" name="grok_conversation" placeholder="Paste your Grok conversation or draft main body writing here..." style="width: 100%; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; min-height: 120px; font-family: Arial, sans-serif; box-sizing: border-box;"></textarea>
+        </div>
+        <input type="submit" value="Submit" style="padding: 12px 20px; font-size: 16px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+      </form>
+
+      <h4>Terminal Log</h4>
+      <div id="log-stream"></div>
+    </div>
+
+  </body>
+
+</html>

@@ -6,3 +6,4 @@ asyncio
 playwright
 beautifulsoup4
 PyPDF2
+flask

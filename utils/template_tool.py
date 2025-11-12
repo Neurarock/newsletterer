@@ -65,6 +65,7 @@ def set_template(month_year, recipient_name):
         f.write(output)
 
     print("✅ HTML file generated successfully: output.html")
+    return f"{output_dir}/newsletter.html"
 
 if __name__ == "__main__":
     set_template()

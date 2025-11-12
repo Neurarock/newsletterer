@@ -12,13 +12,10 @@ Please fill in the below 5 str variables
 @month_year: relating to the 'edition' such as "Nov 2025"
 @recipient_name: username such as "jonathan@neurarock"
 """
-
-def main():
-
-    month_year = "Nov 2025"
-    recipient_name = "davidENfrance"
-
-    main_article = """
+    
+month_year = "Nov 2025"
+recipient_name = "davidENfrance"
+main_article = """
 # A Transatlantic Stablecoin Passport:  
 ## The Next Bretton Woods for Digital Money?
 ---
@@ -104,18 +101,19 @@ The clock is ticking. The FRWG’s next plenary is in March 2026. By then, we wi
 
 """
     
-    news_topic = "stablecoin payment legislative status in major economies"
+news_topic = "stablecoin payment legislative status in major economies"
 
-    article_topic = "UK stablecoin legal consultation framework in a positive step to the right direction, " \
+article_topic = "UK stablecoin legal consultation framework in a positive step to the right direction, " \
     "but is way too slow in progress compared to the us. " \
     "Worries remain that it will be just a successful sandbox scheme but real impactful projects might not take off"
 
+def main(news_topic, article_topic, main_article):
     get_articles(news_topic)
     write_article(article_topic)
     rewrite_main_body(main_article)
-    set_template(month_year, recipient_name)
+    path_to_file = set_template(month_year, recipient_name)
     print('Executed successfully, please find newsletter in output folder')
-    return
+    return path_to_file
 
 if __name__ == "__main__":
-    main()
+    main(news_topic, article_topic, main_article)
