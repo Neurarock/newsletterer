@@ -48,40 +48,129 @@
         white-space: pre-wrap;
         word-wrap: break-word;
       }
+      .log-entry.error {
+        color: #ff6b6b;
+      }
     </style>
     <script>
-      let eventSource;
+      let eventSource = null;
+      let isIntentionallyClosed = false;
       
       function connectToLogs() {
-        eventSource = new EventSource("/logs");
+        console.log("🔄 Connecting to log stream...");
+        isIntentionallyClosed = false;
         
-        eventSource.onmessage = (event) => {
-          if (event.data.trim() === "Connected to log stream") {
+        try {
+          eventSource = new EventSource("/logs");
+          
+          eventSource.addEventListener("open", function() {
+            console.log("✅ Log stream connected successfully");
+            isIntentionallyClosed = false;
+          });
+          
+          eventSource.addEventListener("message", function(event) {
+            const data = event.data.trim();
+            
+            // Skip heartbeat messages
+            if (!data || data.includes("heartbeat")) {
+              console.log("💓 Heartbeat received");
+              return;
+            }
+            
+            console.log("📨 New log message:", data);
+            
             const logDiv = document.getElementById("log-stream");
+            if (!logDiv) {
+              console.error("Log div not found!");
+              return;
+            }
+            
             const newLine = document.createElement("div");
             newLine.className = "log-entry";
-            newLine.textContent = "📡 Connected to log stream";
+            newLine.textContent = data;
+            
             logDiv.appendChild(newLine);
             logDiv.scrollTop = logDiv.scrollHeight;
-          } else if (event.data.trim()) {
-            const logDiv = document.getElementById("log-stream");
-            const newLine = document.createElement("div");
-            newLine.className = "log-entry";
-            newLine.textContent = event.data;
-            logDiv.appendChild(newLine);
-            logDiv.scrollTop = logDiv.scrollHeight;
-          }
-        };
-        
-        eventSource.onerror = () => {
-          console.log("Connection closed, will reconnect");
-          eventSource.close();
-          setTimeout(connectToLogs, 3000);  // Reconnect after 3 seconds
-        };
+          });
+          
+          eventSource.addEventListener("error", function(event) {
+            if (isIntentionallyClosed) {
+              console.log("📴 Stream closed intentionally");
+              return;
+            }
+            
+            if (eventSource.readyState === EventSource.CLOSED) {
+              console.error("❌ Stream connection closed");
+              eventSource = null;
+              // Try to reconnect in 3 seconds
+              setTimeout(connectToLogs, 3000);
+            } else {
+              console.error("⚠️ Stream error:", eventSource.readyState);
+            }
+          });
+          
+        } catch (error) {
+          console.error("💥 Error creating EventSource:", error);
+          setTimeout(connectToLogs, 3000);
+        }
       }
       
-      // Connect to logs on page load
-      connectToLogs();
+      // Connect when page loads
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', connectToLogs);
+      } else {
+        connectToLogs();
+      }
+      
+      // Close connection when page unloads
+      window.addEventListener('beforeunload', function() {
+        isIntentionallyClosed = true;
+        if (eventSource) {
+          eventSource.close();
+        }
+      });
+      
+      // Handle form submission without page refresh
+      function submitNewsletterForm(event) {
+        event.preventDefault();
+        
+        const formData = new FormData(document.getElementById("newsletter-form"));
+        const submitButton = event.target.querySelector('input[type="submit"]');
+        
+        // Disable submit button
+        submitButton.disabled = true;
+        submitButton.value = "Processing...";
+        
+        console.log("📤 Submitting form...");
+        
+        fetch("/submit", {
+          method: "POST",
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log("📨 Response:", data);
+          
+          if (data.success && data.redirect) {
+            console.log("✅ Newsletter generated! Redirecting...");
+            // Wait a moment then redirect to newsletter page
+            setTimeout(() => {
+              window.location.href = data.redirect;
+            }, 2000);
+          } else {
+            console.error("❌ Error:", data.message);
+            alert(data.message || "An error occurred");
+            submitButton.disabled = false;
+            submitButton.value = "Submit";
+          }
+        })
+        .catch(error => {
+          console.error("❌ Form submission error:", error);
+          alert("An error occurred while submitting the form");
+          submitButton.disabled = false;
+          submitButton.value = "Submit";
+        });
+      }
     </script>
   </head>
 
@@ -92,10 +181,10 @@
 
       <p>Use this form to create this month's newsletter:</p>
 
-      <form action="/submit" method="post" class="form-section" style="display: flex; flex-direction: column; gap: 15px;">
+      <form id="newsletter-form" onsubmit="submitNewsletterForm(event)" class="form-section" style="display: flex; flex-direction: column; gap: 15px;">
         <div>
-          <label for="namefield" style="display: block; margin-bottom: 5px; font-weight: bold;">news_topic:</label>
-          <input type="text" id="namefield" name="news_topic" placeholder="e.g., Stablecoin regulatory status and volume" style="width: 100%; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+          <label for="news_topic" style="display: block; margin-bottom: 5px; font-weight: bold;">news_topic:</label>
+          <input type="text" id="news_topic" name="news_topic" placeholder="e.g., Stablecoin regulatory status and volume" style="width: 100%; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
         </div>
         <div>
           <label for="opinion_piece_prompt" style="display: block; margin-bottom: 5px; font-weight: bold;">opinion_piece_prompt:</label>
