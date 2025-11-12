@@ -1,0 +1,171 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Digital Legacy Insights – November 2025</title>
+  <style>
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; background:#f4f4f4; margin:0; padding:0; color:#333; }
+    .container { max-width:600px; margin:20px auto; background:#fff; border-radius:8px; overflow:hidden; box-shadow:0 2px 10px rgba(0,0,0,0.1); }
+    .header { background:#001f3f; color:#fff; padding:30px 20px; text-align:center; }
+    .header h1 { margin:0; font-size:26px; font-weight:700; }
+    .header p { margin:8px 0 0; font-size:14px; opacity:0.9; }
+    .content { padding:30px 25px; line-height:1.6; }
+    .highlight { background:#fff8e1; padding:15px; border-left:4px solid #ffc107; margin:20px 0; font-weight:500; }
+    .quote { background:#f0f7ff; padding:18px; border-radius:6px; font-style:italic; margin:20px 0; }
+    .quote cite { display:block; margin-top:10px; font-style:normal; font-size:13px; color:#0066cc; }
+    .btn { display:inline-block; background:#007bff; color:#fff; padding:12px 24px; text-decoration:none; border-radius:5px; font-weight:600; margin:15px 0; }
+    .section { margin-bottom:30px; }
+    .section h2 { color:#001f3f; border-bottom:2px solid #007bff; padding-bottom:8px; font-size:20px; }
+    ul { padding-left:20px; }
+    ul li { margin-bottom:10px; }
+    .footer { background:#001f3f; color:#ccc; padding:20px; text-align:center; font-size:12px; }
+    .footer a { color:#4da6ff; text-decoration:none; }
+    .pie-img { text-align:center; margin:20px 0; }
+    .pie-img img { max-width:100%; height:auto; border-radius:8px; }
+    @media (max-width:600px) {
+      .container { margin:10px; }
+      .header, .content { padding:20px 15px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>Digital Legacy Insights</h1>
+      <p>November 2025 Edition | London Digital Escrow</p>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+
+      <p>Welcome, <strong>@{{recipient_name}}</strong>, to the <strong>{{edition}}</strong> edition of <em>Digital Legacy Insights</em> — your expert guide to securing digital assets in UK estate planning.</p>
+
+      <!--main content-->
+      <div class="section">
+        <h2>{{title}}</h2>
+        {{exec_sum}}
+        {{quote}}
+      </div>
+
+      <!-- Highlighted Section -->
+      <div class="highlight">
+        {{highlight}}
+     </div>
+
+      <!-- Key Takeaways -->
+      <div class="section">
+        <h2>Key Takeaways</h2>
+        {{take_aways}}
+      </div>
+
+      <!--agent research on news articles -->
+      <div class="section">
+        <h2>Recent Industry Updates ({{time_frame}})</h2>
+        <ul>
+          {% for article in articles %}
+            <li>
+              <strong>
+                <a href="{{ article.url }}" target="_blank" rel="noopener noreferrer">
+                  {{ article.title }}
+                </a>
+              </strong>
+              – <em>{{ article.source }}, {{ article.formatted_date }}</em><br>
+              {{ article.summary }}
+            </li>
+          {% endfor %}
+        </ul>
+
+      </div>
+
+      <!--agent written article (Deep Dive piece)-->
+      <div class="section">
+        <h2>{{article_sub_title}}</h2>
+        <ul>
+          <li>
+            {{article_content|safe}}
+          </li>
+        </ul>
+      </div>
+
+
+
+
+
+
+      <!-- CTA -->
+      <div style="text-align:center; margin:30px 0;">
+        <p><strong>Ready to Secure Your Digital Legacy?</strong></p>
+        <a href="mailto:info@LondonDigitalEscrow.com" class="btn">Book Free 30-Minute Consultation</a>
+      </div>
+
+      <hr style="border:0; border-top:1px solid #eee; margin:30px 0;">
+
+      <p style="text-align:center; font-size:14px;">
+        <strong>Contact Us:</strong><br>
+        📧 <a href="mailto:info@LondonDigitalEscrow.com">info@LondonDigitalEscrow.com</a><br>
+        🌐 <a href="https://LondonDigitalEscrow.com">LondonDigitalEscrow.com</a><br>
+        📞 +44 20 7946 0000<br>
+        🐦 <a href="https://x.com/LondonDigitalEscrow">@LondonDigitalEscrow</a>
+      </p>
+
+      <p style="font-size:12px; color:#666; text-align:center;">
+        <em>London Digital Escrow Limited is authorised and regulated by the Solicitors Regulation Authority (SRA No. 736478).<br>
+        Services tailored for England, Wales, Scotland, and Northern Ireland.</em>
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p><strong>Next Month:</strong> Tax Implications of Digital Inheritance – Navigating CGT and IHT in 2026</p>
+      <p>
+        <a href="#">Unsubscribe</a> | 
+        <a href="#">Update Preferences</a> | 
+        <a href="#">Forward to a Friend</a>
+      </p>
+      <p>© 2025 London Digital Escrow Limited. All rights reserved.<br>
+         The Engine Room, Battersea Power Station, London SW11 8BZ</p>
+    </div>
+  </div>
+</body>
+</html>

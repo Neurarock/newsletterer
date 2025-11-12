@@ -1,0 +1,8 @@
+pydantic-ai
+"pydantic-ai[examples]"
+"pydantic-ai-slim[duckduckgo]"
+dotenv
+asyncio
+playwright
+beautifulsoup4
+PyPDF2
